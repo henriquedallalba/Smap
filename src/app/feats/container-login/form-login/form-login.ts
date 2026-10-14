@@ -29,11 +29,11 @@ export class FormLogin {
     event.preventDefault();
     if (this.loginForm().invalid()) return;
    
-    const resultado = this.usuarioService.login(
+    this.usuarioService.login(
       this.loginModel().email,
       this.loginModel().senha
-    )
-    if (resultado){this.router.navigate(['/perfil-usuario']);}//pagina principal de perfil do usuario
+    ).subscribe({ next: () => this.router.navigate(['/perfil-usuario']), error: () => alert('E-mail ou senha inválidos.') });
   }
   
 }
+
