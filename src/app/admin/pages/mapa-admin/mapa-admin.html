@@ -36,10 +36,9 @@
         (ngModelChange)="filtroStatus.set($event)"
       >
         <option value="">Status</option>
-        <option value="recebido">Recebido</option>
-        <option value="em-analise">Em análise</option>
-        <option value="em-andamento">Em andamento</option>
-        <option value="resolvido">Resolvido</option>
+        <option value="PENDENTE">Pendente</option>
+        <option value="EM_ANDAMENTO">Em andamento</option>
+        <option value="RESOLVIDA">Resolvida</option>
       </select>
 
       <select
@@ -71,7 +70,7 @@
       <p class="estado-msg">Carregando ocorrências…</p>
     } @else if (comErro()) {
       <div class="estado-msg erro">
-        <p>Não foi possível carregar as ocorrências. Confirme se a API está rodando em http://localhost:8080.</p>
+        <p>Não foi possível carregar as ocorrências. Confirme se a API está rodando em http://localhost:18080.</p>
         <button type="button" class="btn-tentar" (click)="carregar()">Tentar novamente</button>
       </div>
     }

@@ -1,191 +1,61 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  OnDestroy,
-  ViewChild,
-  computed,
-  effect,
-  inject,
-} from '@angular/core';
+import { Component, ElementRef, OnDestroy, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { DatePipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 import * as L from 'leaflet';
-import { environment } from '../../../../environments/environment';
+import { AdminService, AdminDetail, Territory } from '../../admin.service';
+import { OccurrenceImage } from '../../../shared/occurrence-image';
 
-interface OcorrenciaApi {
-  id: number;
-  titulo: string;
-  descricao: string;
-  categoria: string;
-  localizacao: string;
-  latitude: number | null;
-  longitude: number | null;
-  criadaEm: string | null;
-  imagemUrl?: string | null;
+@Component({selector:'app-ocorrencia-detalhes',imports:[RouterLink,FormsModule,DatePipe,OccurrenceImage],templateUrl:'./ocorrencia-detalhe-admin.html',styleUrl:'../../admin-forms.css'})
+export class OcorrenciaDetalhes implements OnDestroy {
+ readonly service=inject(AdminService);
+ private readonly route=inject(ActivatedRoute);
+ readonly id=toSignal(this.route.paramMap.pipe(map(p=>Number(p.get('id')))),{initialValue:Number(this.route.snapshot.paramMap.get('id'))});
+ readonly record=httpResource<AdminDetail>(()=>this.service.apiBase+'/ocorrencias/admin/'+this.id());
+ readonly current=computed(()=>this.record.value()?.ocorrencia);
+ readonly territories=signal<Territory[]>([]);readonly error=signal('');readonly success=signal('');readonly busy=signal(false);
+ reason='';status='EM_ANDAMENTO';banReason='';banTerritory='';
+ readonly container=viewChild<ElementRef<HTMLDivElement>>('mapContainer');
+ private map?:L.Map;private mapElement?:HTMLDivElement;private observer?:ResizeObserver;private marker?:L.CircleMarker;
+ constructor(){
+   this.service.territories().subscribe({next:t=>this.territories.set(t),error:e=>this.error.set(this.service.message(e))});
+   effect(()=>{
+     const el=this.container()?.nativeElement;const o=this.current();
+     if(!el || !o){this.removeMap();return;}
+     if(this.mapElement!==el){
+       this.removeMap();this.mapElement=el;this.map=L.map(el).setView([-26.9184,-49.0656],11);
+       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19}).addTo(this.map);
+       this.observer=new ResizeObserver(()=>this.map?.invalidateSize());this.observer.observe(el);
+     }
+     this.marker?.remove();
+     const latitude=Number(o.latitude), longitude=Number(o.longitude);
+     if(Number.isFinite(latitude) && Number.isFinite(longitude)){
+       this.marker=L.circleMarker([latitude,longitude],{radius:9,color:'#087e70'}).addTo(this.map!);
+       this.map?.setView([latitude,longitude],15);
+     }
+   });
+ }
+ ngOnDestroy(){this.removeMap();}
+ private removeMap(){this.observer?.disconnect();this.map?.remove();this.map=undefined;this.mapElement=undefined;}
+ moderate(action:string){
+   if(this.busy())return;this.busy.set(true);this.error.set('');this.success.set('');
+   this.service.moderate(this.id(),action,action==='CHANGE_STATUS'?this.status:undefined,action==='REJECT'?this.reason:undefined).subscribe({
+     next:()=>{this.busy.set(false);this.success.set('Ocorrência atualizada.');this.record.reload();},
+     error:e=>{this.busy.set(false);this.error.set(this.service.message(e));}});
+ }
+ link(){
+   if(this.busy())return;this.busy.set(true);this.error.set('');
+   this.service.link(this.id()).subscribe({next:()=>{this.busy.set(false);this.success.set('Território recalculado pelas coordenadas.');this.record.reload();},error:e=>{this.busy.set(false);this.error.set(this.service.message(e));}});
+ }
+ ban(){
+   const author=this.record.value()?.autorId;
+   if(!author || this.busy() || !confirm('Aplicar este banimento à conta autora?'))return;
+   this.busy.set(true);this.error.set('');this.success.set('');
+   this.service.ban(author,this.banTerritory||null,this.banReason).subscribe({next:()=>{this.busy.set(false);this.success.set('Banimento aplicado. Consulte Contas e segurança para revogá-lo.');this.banReason='';},error:e=>{this.busy.set(false);this.error.set(this.service.message(e));}});
+ }
+ territoryName(){return this.territories().find(t=>t.id===this.record.value()?.territorioId)?.name??'Sem território associado';}
 }
 
-@Component({
-  selector: 'app-ocorrencia-detalhes',
-  standalone: true,
-  imports: [RouterLink],
-  templateUrl: './ocorrencia-detalhe-admin.html',
-  styleUrl: './ocorrencia-detalhe-admin.css',
-})
-export class OcorrenciaDetalhes implements AfterViewInit, OnDestroy {
-  private readonly route = inject(ActivatedRoute);
-
-  private readonly idOcorrencia = toSignal(
-    this.route.paramMap.pipe(map((params) => Number(params.get('id')))),
-    { initialValue: Number(this.route.snapshot.paramMap.get('id')) },
-  );
-  private readonly urlApi = computed(
-    () =>
-      `${environment.apiUrl.replace(/\/+$/, '')}/ocorrencias/${this.idOcorrencia()}`,
-  );
-
-  protected readonly ocorrenciaResource = httpResource<OcorrenciaApi>(
-    () => this.urlApi(),
-  );
-
-  protected readonly ocorrencia = computed(() => this.ocorrenciaResource.value());
-
-  protected readonly protocolo = computed(() =>
-    this.ocorrencia()
-      ? `SMAP-${this.anoProtocolo()}-${String(this.idOcorrencia()).padStart(6, '0')}`
-      : '',
-  );
-
-  @ViewChild('mapContainer', { static: false })
-  private mapContainer?: ElementRef<HTMLDivElement>;
-
-  private map?: L.Map;
-  private marcador?: L.Marker;
-  private resizeObserver?: ResizeObserver;
-  private mapaInicializado = false;
-
-  constructor() {
-    // Reage à chegada da ocorrência (ou mudança de id).
-    // Se o mapa já estiver pronto, atualiza o marcador.
-    // Se ainda não estiver, tenta inicializar (o @else if já renderizou).
-    effect(() => {
-      const ocorrencia = this.ocorrencia();
-
-      if (!ocorrencia) return;
-
-      // Se o mapa não está pronto, tenta inicializar agora
-      // (o @ViewChild já pode ter resolvido após os dados chegarem)
-      if (!this.mapaInicializado) {
-        queueMicrotask(() => this.inicializarMapa());
-      }
-
-      // Se já está pronto, só atualiza o marcador
-      if (this.mapaInicializado && this.map) {
-        this.aplicarMarcador(ocorrencia);
-      }
-    });
-  }
-
-  ngAfterViewInit(): void {
-    // Tentativa inicial — se os dados já chegaram rápido,
-    // o @ViewChild já estará resolvido aqui.
-    // Se não, o effect cuida de inicializar depois.
-    this.inicializarMapa();
-  }
-
-  ngOnDestroy(): void {
-    this.resizeObserver?.disconnect();
-    this.map?.remove();
-  }
-
-  protected formatadoEnviado(): string {
-    const ocorrencia = this.ocorrencia();
-    if (!ocorrencia?.criadaEm) return '—';
-
-    const data = new Date(ocorrencia.criadaEm);
-    if (Number.isNaN(data.getTime())) return '—';
-
-    if (Number.isNaN(data.getTime())) {
-      return '—';
-    }
-
-    const mes = data.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
-    const mesCapitalizado = mes.charAt(0).toUpperCase() + mes.slice(1);
-    const horas = data.toLocaleTimeString('pt-BR', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-
-    return `${data.getDate()} ${mesCapitalizado}, ${horas}`;
-  }
-
-  /**
-   * Inicializa o mapa Leaflet.
-   * Só roda se:
-   *   - O container (#mapContainer) já existir no DOM
-   *   - O mapa ainda não foi inicializado
-   */
-  private inicializarMapa(): void {
-    if (this.mapaInicializado) return;
-    if (!this.mapContainer?.nativeElement) return;
-
-    this.map = L.map(this.mapContainer.nativeElement, {
-      zoomControl: false,
-      attributionControl: false,
-    });
-
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-    }).addTo(this.map);
-
-    this.mapaInicializado = true;
-
-    // Aplica o marcador (se a ocorrência já chegou)
-    this.aplicarMarcador(this.ocorrencia());
-
-    // Observa o tamanho do container pra ajustar o mapa ao redimensionar
-    if (typeof ResizeObserver !== 'undefined') {
-      this.resizeObserver = new ResizeObserver(() => this.map?.invalidateSize());
-      this.resizeObserver.observe(this.mapContainer.nativeElement);
-    }
-  }
-
-  private aplicarMarcador(ocorrencia: OcorrenciaApi | undefined | null): void {
-    if (!this.map || !ocorrencia) return;
-
-    const temCoordenadas = ocorrencia.latitude != null && ocorrencia.longitude != null;
-
-    const coordenadas: L.LatLngTuple = temCoordenadas
-      ? [ocorrencia.latitude!, ocorrencia.longitude!]
-      : [-26.9184, -49.0656];
-
-    if (this.marcador) {
-      this.marcador.remove();
-      this.marcador = undefined;
-    }
-
-    if (temCoordenadas) {
-      this.marcador = L.marker(coordenadas, {
-        icon: L.divIcon({
-          className: 'pin-ocorrencia',
-          html: `<svg viewBox="0 0 24 32" width="36" height="48" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#ef4444"/><circle cx="12" cy="12" r="4.5" fill="#ffffff"/></svg>`,
-          iconSize: [36, 48],
-          iconAnchor: [18, 46],
-        }),
-      }).addTo(this.map);
-    }
-
-    this.map.setView(coordenadas, temCoordenadas ? 15 : 12);
-  }
-
-  private anoProtocolo(): number {
-    const criadaEm = this.ocorrencia()?.criadaEm;
-    if (criadaEm) {
-      const data = new Date(criadaEm);
-      if (!Number.isNaN(data.getTime())) return data.getFullYear();
-    }
-    return new Date().getFullYear();
-  }
-}

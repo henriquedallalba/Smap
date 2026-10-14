@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import * as L from 'leaflet';
+import { environment } from '../../../../environments/environment';
 
 interface OcorrenciaApi {
   id: number;
@@ -18,8 +19,8 @@ interface OcorrenciaApi {
   descricao: string;
   categoria: string;
   localizacao: string;
-  latitude?: number | null;
-  longitude?: number | null;
+  latitude?: number | string | null;
+  longitude?: number | string | null;
   criadaEm?: string | null;
   // ⚠️ ADICIONAR quando API tiver:
   // status?: string;
@@ -41,7 +42,7 @@ interface CategoriaLegenda {
 })
 export class MapaAdmin implements AfterViewInit, OnDestroy {
   private readonly http = inject(HttpClient);
-  private readonly apiBase = 'http://localhost:18080/ocorrencias';
+  private readonly apiBase = `${environment.apiUrl.replace(/\/+$/, '')}/ocorrencias`;
 
   @ViewChild('mapContainer', { static: true })
   private mapContainer!: ElementRef<HTMLDivElement>;
@@ -91,10 +92,8 @@ export class MapaAdmin implements AfterViewInit, OnDestroy {
   protected readonly comCoordenadas = computed(() =>
     this.ocorrencias().filter(
       (o) =>
-        typeof o.latitude === 'number' &&
-        typeof o.longitude === 'number' &&
-        Number.isFinite(o.latitude) &&
-        Number.isFinite(o.longitude),
+        Number.isFinite(Number(o.latitude)) && Number.isFinite(Number(o.longitude)) &&
+        Math.abs(Number(o.latitude)) <= 90 && Math.abs(Number(o.longitude)) <= 180,
     ),
   );
 
@@ -204,11 +203,12 @@ export class MapaAdmin implements AfterViewInit, OnDestroy {
   }
 
   protected focar(ocorrencia: OcorrenciaApi): void {
-    if (typeof ocorrencia.latitude !== 'number' || typeof ocorrencia.longitude !== 'number') {
+    const latitude=Number(ocorrencia.latitude), longitude=Number(ocorrencia.longitude);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
       return;
     }
     this.selecionadaId.set(ocorrencia.id);
-    this.map?.setView([ocorrencia.latitude, ocorrencia.longitude], 16);
+    this.map?.setView([latitude, longitude], 16);
   }
 
   protected limparFiltros(): void {
@@ -250,7 +250,7 @@ export class MapaAdmin implements AfterViewInit, OnDestroy {
       `;
 
       const marcador = L.circleMarker(
-        [ocorrencia.latitude as number, ocorrencia.longitude as number],
+          [Number(ocorrencia.latitude), Number(ocorrencia.longitude)],
         {
           radius: 10,
           color: cor,
@@ -269,10 +269,11 @@ export class MapaAdmin implements AfterViewInit, OnDestroy {
     if (this.ocorrenciasFiltradas().length > 0) {
       this.map?.fitBounds(
         this.ocorrenciasFiltradas().map(
-          (o) => [o.latitude as number, o.longitude as number] as L.LatLngTuple,
+          (o) => [Number(o.latitude), Number(o.longitude)] as L.LatLngTuple,
         ),
         { maxZoom: 15, padding: [60, 60] },
       );
     }
   }
 }
+
