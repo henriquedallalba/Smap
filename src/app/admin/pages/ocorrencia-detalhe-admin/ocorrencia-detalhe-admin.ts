@@ -15,7 +15,11 @@ export class OcorrenciaDetalhes implements OnDestroy {
  private readonly route=inject(ActivatedRoute);
  readonly id=toSignal(this.route.paramMap.pipe(map(p=>Number(p.get('id')))),{initialValue:Number(this.route.snapshot.paramMap.get('id'))});
  readonly record=httpResource<AdminDetail>(()=>this.service.apiBase+'/ocorrencias/admin/'+this.id());
+ readonly ocorrenciaResource=this.record;
  readonly current=computed(()=>this.record.value()?.ocorrencia);
+ readonly ocorrencia=computed(()=>this.current());
+ readonly protocolo=computed(()=>this.current()?.id ? `SMAP-${this.current()!.id}` : '');
+ readonly formatadoEnviado=computed(()=>this.current()?.criadaEm ? new Date(this.current()!.criadaEm!).toLocaleString('pt-BR') : 'Data não informada');
  readonly territories=signal<Territory[]>([]);readonly error=signal('');readonly success=signal('');readonly busy=signal(false);
  reason='';status='EM_ANDAMENTO';banReason='';banTerritory='';
  readonly container=viewChild<ElementRef<HTMLDivElement>>('mapContainer');

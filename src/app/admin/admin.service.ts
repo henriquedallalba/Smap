@@ -2,9 +2,10 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { timeout } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { UserService, AuthProfile } from '../feats/profile user/user-service/user-service';
+import { UserService } from '../feats/profile user/user-service/user-service';
 
 export interface Point { latitude: number; longitude: number; }
+export interface AuthProfile { id:string; email:string; name:string; role?:string; permissions?:string[]; territoryId?:string|null; active?:boolean; }
 export interface Territory { id: string; name: string; kind: 'REGION'|'CITY'|'NEIGHBORHOOD'; externalCode: string; parentId: string|null; boundary: Point[]; }
 export interface Occurrence {
  id: number; titulo: string; descricao: string; categoria: string; localizacao: string;
@@ -23,10 +24,10 @@ export const PERMISSIONS = [
 export class AdminService {
  private readonly http=inject(HttpClient);
  readonly auth=inject(UserService);
- readonly authBase=environment.authUrl.replace(/\/+$/,'');
+ readonly authBase=((environment as typeof environment & {authUrl?:string}).authUrl ?? `http://${typeof window !== 'undefined' ? window.location.hostname : 'localhost'}:8081`).replace(/\/+$/,'');
  readonly apiBase=environment.apiUrl.replace(/\/+$/,'');
- supreme() { return this.auth.usuarioLogado()?.role==='SUPREME'; }
- can(permission:string) { return this.supreme() || !!this.auth.usuarioLogado()?.permissions.includes(permission); }
+ supreme() { return (this.auth.usuarioLogado() as unknown as AuthProfile|null)?.role==='SUPREME'; }
+ can(permission:string) { const user=this.auth.usuarioLogado() as unknown as AuthProfile|null; return this.supreme() || !!user?.permissions?.includes(permission); }
  territories() { return this.http.get<Territory[]>(this.authBase+'/territories').pipe(timeout(12000)); }
  admins() { return this.http.get<AuthProfile[]>(this.authBase+'/admins').pipe(timeout(12000)); }
  createTerritory(body:unknown) { return this.http.post<Territory>(this.authBase+'/territories',body).pipe(timeout(12000)); }

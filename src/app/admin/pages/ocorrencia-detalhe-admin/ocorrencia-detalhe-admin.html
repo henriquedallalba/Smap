@@ -24,7 +24,7 @@
     <div class="detalhe-principal">
       <article class="card">
         @if (atual.imagemUrl) {
-        <img class="foto-ocorrencia" [src]="atual.imagemUrl" [alt]="'Imagem da ocorrência: ' + atual.titulo">
+        <img class="foto-ocorrencia" [smapImage]="atual.imagemUrl" [alt]="'Imagem da ocorrência: ' + atual.titulo">
         } @else {
         <div class="foto-area">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
@@ -83,7 +83,7 @@
 
         <div class="gerenciamento-linha">
           <span>Status Atual</span>
-          <span class="badge-status">—</span>
+          <span class="badge-status">{{ service.labelStatus(atual.status) }}</span>
         </div>
 
         <div class="gerenciamento-linha">
@@ -96,11 +96,11 @@
           <strong class="sem-dado">—</strong>
         </div>
 
-        <button class="botao-primario" type="button">Encaminhar para execução</button>
+        @if(service.can('CHANGE_STATUS')) {<button class="botao-primario" type="button" (click)="status='EM_ANDAMENTO'; moderate('CHANGE_STATUS')" [disabled]="busy()">Encaminhar para execução</button>}
 
         <div class="botoes-par">
-          <button class="botao-contorno" type="button">Pausar</button>
-          <button class="botao-rejeitar" type="button">Rejeitar</button>
+          @if(service.can('CHANGE_STATUS')) {<button class="botao-contorno" type="button" (click)="status='PENDENTE'; moderate('CHANGE_STATUS')" [disabled]="busy()">Pausar</button>}
+          @if(service.can('REJECT')) {<button class="botao-rejeitar" type="button" (click)="reason='Recusada pelo administrador'; moderate('REJECT')" [disabled]="busy()">Rejeitar</button>}
         </div>
       </article>
 
@@ -127,3 +127,4 @@
   </div>
   }
 </section>
+
