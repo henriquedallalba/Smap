@@ -48,7 +48,7 @@ export class FormCadastro {
     required(schemaPath.check);
     email(schemaPath.email, { message: '*' });
     maxLength(schemaPath.senha, 16, { message: '*A senha deve ter no máximo 16 caracteres!' });
-    minLength(schemaPath.senha, 8, { message: '*Mínimo 8 caracteres!' });
+    minLength(schemaPath.senha, 12, { message: '*Mínimo 12 caracteres!' });
     pattern(schemaPath.senha, /.*[A-Z].*/, { message: '*Ao menos 1 letra maiúscula!' });
     pattern(schemaPath.senha, /.*\d.*/, { message: '*Ao menos 1 número!' });
     pattern(schemaPath.senha, /.*[@$!%*?&].*/, { message: '*Ao menos 1 caractere especial!' });
@@ -71,7 +71,20 @@ export class FormCadastro {
   cadastrar(event: SubmitEvent) {
     event.preventDefault();
     if (this.cadastroForm().invalid()) return;
-    this.usuarioService.cadastrar(this.cadastroModel()).subscribe({ next: () => { this.cadastroForm().reset(); this.router.navigate(['/login']); }, error: () => alert('Não foi possível criar a conta. Confira os dados e aceite os termos.') });
+    this.usuarioService.cadastrar(this.cadastroModel()).subscribe({
+      next: () => { this.cadastroForm().reset(); this.router.navigate(['/login']); },
+      error: (error: { status?: number }) => {
+        const message = error.status === 0
+          ? 'A autenticação não está disponível. Inicie a auth-smap na porta 8081.'
+          : error.status === 409
+            ? 'Este e-mail já está cadastrado.'
+            : error.status === 400
+              ? 'Confira CPF, senha (mínimo 12 caracteres) e aceite os termos.'
+              : 'Não foi possível criar a conta. Confira os dados e tente novamente.';
+        alert(message);
+      },
+    });
   }
 }
+
 
