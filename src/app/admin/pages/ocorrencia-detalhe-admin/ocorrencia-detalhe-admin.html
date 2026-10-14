@@ -1,130 +1,23 @@
-<section class="admin-page">
-  <nav class="breadcrumb" aria-label="Navegação">
-    <a routerLink="/admin/ocorrencias">Ocorrências</a>
-
-    <span class="breadcrumb-separador">/</span>
-
-    @if (protocolo()) {
-    <span class="breadcrumb-atual">{{ protocolo() }}</span>
-    }
-  </nav>
-
-  @if (ocorrenciaResource.isLoading()) {
-  <p class="estado-simples">Carregando ocorrência…</p>
-  } @else if (ocorrenciaResource.error()) {
-  <div class="estado estado-erro" role="alert">
-    <strong>Ocorrência não encontrada</strong>
-
-    <p>Verifique se a API está rodando em http://localhost:8080 e se o registro existe.</p>
-
-    <a class="botao-voltar" routerLink="/admin/ocorrencias">Voltar para ocorrências</a>
-  </div>
-  } @else if (ocorrencia(); as atual) {
-  <div class="detalhe-grid">
-    <div class="detalhe-principal">
-      <article class="card">
-        @if (atual.imagemUrl) {
-        <img class="foto-ocorrencia" [smapImage]="atual.imagemUrl" [alt]="'Imagem da ocorrência: ' + atual.titulo">
-        } @else {
-        <div class="foto-area">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <circle cx="8.5" cy="8.5" r="1.5" />
-            <polyline points="21 15 16 10 5 21" />
-          </svg>
-
-          <span>Foto não informada para esta ocorrência</span>
-        </div>
-        }
-
-        <h2 class="ocorrencia-titulo">{{ atual.titulo }}</h2>
-
-        <p class="ocorrencia-descricao">{{ atual.descricao || 'Sem descrição informada.' }}</p>
-      </article>
-
-      <article class="card">
-        <h3>Localização do Incidente</h3>
-
-        <div class="mapa" #mapContainer></div>
-
-        <p class="endereco">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-            <circle cx="12" cy="10" r="3" />
-          </svg>
-
-          {{ atual.localizacao || 'Endereço não informado' }}, Blumenau - SC
-        </p>
-      </article>
-
-      <article class="card cidadao-card">
-        <span class="cidadao-avatar" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-        </span>
-
-        <div class="cidadao-info">
-          <strong>Cidadão</strong>
-          <span>Cidadão ativo no SMAP</span>
-        </div>
-
-        <span class="cidadao-envio">Enviado em: {{ formatadoEnviado() }}</span>
-      </article>
-    </div>
-
-    <aside class="detalhe-lateral">
-      <article class="card">
-        <h3>Gerenciamento</h3>
-
-        <div class="gerenciamento-linha">
-          <span>Status Atual</span>
-          <span class="badge-status">{{ service.labelStatus(atual.status) }}</span>
-        </div>
-
-        <div class="gerenciamento-linha">
-          <span>Prioridade</span>
-          <span class="sem-dado">—</span>
-        </div>
-
-        <div class="gerenciamento-linha">
-          <span>Secretaria Responsável</span>
-          <strong class="sem-dado">—</strong>
-        </div>
-
-        @if(service.can('CHANGE_STATUS')) {<button class="botao-primario" type="button" (click)="status='EM_ANDAMENTO'; moderate('CHANGE_STATUS')" [disabled]="busy()">Encaminhar para execução</button>}
-
-        <div class="botoes-par">
-          @if(service.can('CHANGE_STATUS')) {<button class="botao-contorno" type="button" (click)="status='PENDENTE'; moderate('CHANGE_STATUS')" [disabled]="busy()">Pausar</button>}
-          @if(service.can('REJECT')) {<button class="botao-rejeitar" type="button" (click)="reason='Recusada pelo administrador'; moderate('REJECT')" [disabled]="busy()">Rejeitar</button>}
-        </div>
-      </article>
-
-      <article class="card">
-        <h3>Histórico de Atualizações</h3>
-
-        <ol class="historico">
-          <li>
-            <span class="historico-ponto"></span>
-
-            <div class="historico-conteudo">
-              <strong>Enviada</strong>
-              <span class="historico-meta">{{ formatadoEnviado() }} — Cidadão</span>
-              <p>Ocorrência registrada via aplicativo móvel cidadão.</p>
-            </div>
-          </li>
-        </ol>
-
-        <p class="historico-nota">
-          As próximas atualizações aparecem quando a API passar a registrar status.
-        </p>
-      </article>
-    </aside>
-  </div>
-  }
+<section class="admin-page"><a routerLink="/admin/ocorrencias">← Ocorrências</a><h1>Ocorrência #{{id()}}</h1>
+@if(error()){<p class="notice" role="alert">{{error()}}</p>} @if(success()){<p class="notice" role="status">{{success()}}</p>}
+@if(record.isLoading()){<p role="status">Carregando…</p>}@else if(record.error()){<p class="notice" role="alert">Registro indisponível ou fora da sua área de administração.</p><button (click)="record.reload()">Tentar novamente</button>}@else if(current();as o){
+<div class="grid"><div><article class="card"><h2>{{o.titulo}}</h2><p>{{o.descricao}}</p><p>{{o.categoria}} — {{o.localizacao}}</p>
+@if(o.imagemUrl){<img class="photo" [smapImage]="o.imagemUrl" [alt]="'Foto de '+o.titulo">}
+<p class="muted">Enviada em {{o.criadaEm | date:'dd/MM/yyyy HH:mm'}}</p></article>
+<article class="card"><h2>Localização</h2><div class="map" #mapContainer></div><p>{{territoryName()}}</p>
+@if(service.supreme()){<button class="secondary" (click)="link()" [disabled]="busy()">Recalcular território</button>}
+</article>
+@if(record.value()?.autorId;as author){<article class="card"><h2>Autor — acesso restrito</h2><p>Identificador interno da conta:</p><code>{{author}}</code><p class="muted">Use somente para moderação. Este identificador não aparece nas respostas públicas.</p>
+@if(service.can('BAN')){<form (ngSubmit)="ban()"><h2>Banir conta</h2>
+<label>Alcance<select name="banTerritory" [(ngModel)]="banTerritory" [required]="!service.supreme()"><option value="">{{service.supreme()?'Global':'Selecione uma área'}}</option>@for(t of territories();track t.id){<option [value]="t.id">{{t.name}}</option>}</select></label>
+<label>Motivo<textarea name="banReason" [(ngModel)]="banReason" required maxlength="500"></textarea></label>
+<p>Local: impede novos registros nessa área e seus descendentes. Global: somente o supremo, com revogação das sessões.</p>
+<button class="danger" [disabled]="busy() || !banReason.trim() || (!service.supreme() && !banTerritory)">Aplicar banimento</button></form>}
+</article>}
+</div><aside><article class="card"><h2>Moderação</h2><p>Publicação: <strong>{{o.moderacao || 'APROVADA'}}</strong></p><p>Status: <strong>{{o.status}}</strong></p>
+@if(o.motivoModeracao){<p>Motivo: {{o.motivoModeracao}}</p>}
+@if(service.can('APPROVE')){<button (click)="moderate('APPROVE')" [disabled]="busy() || o.moderacao==='APROVADA'">Aprovar publicação</button>}
+@if(service.can('REJECT')){<form (ngSubmit)="moderate('REJECT')"><label>Motivo da recusa<textarea name="reason" [(ngModel)]="reason" required maxlength="500"></textarea></label><div class="actions"><button class="danger" [disabled]="busy() || !reason.trim()">Recusar / ocultar</button></div></form>}
+@if(service.can('CHANGE_STATUS')){<form (ngSubmit)="moderate('CHANGE_STATUS')"><label>Status<select name="status" [(ngModel)]="status"><option value="PENDENTE">Pendente</option><option value="EM_ANDAMENTO">Em andamento</option><option value="RESOLVIDA">Resolvida</option></select></label><div class="actions"><button [disabled]="busy() || (o.moderacao!==null && o.moderacao!=='APROVADA')">Atualizar status</button></div></form>}
+</article><article class="card"><h2>Histórico de moderação</h2>@for(event of record.value()?.historico;track event.id){<p><strong>{{event.acao}}</strong> — {{event.data | date:'dd/MM/yyyy HH:mm'}}<br>{{event.motivo}}<br><small>Administrador: {{event.administradorId}}</small></p>}@empty{<p>Nenhuma alteração administrativa registrada.</p>}</article></aside></div>}
 </section>
-

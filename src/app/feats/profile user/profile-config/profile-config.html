@@ -1,97 +1,20 @@
-<section>
-    <h1>Meu Perfil</h1>
-    <div class="container">
-        <div class="perfil">
-            <div class="icon-box">
-                <img class="foto-user" src="https://media.licdn.com/dms/image/v2/D4D03AQGiD9mzsrZGSw/profile-displayphoto-scale_400_400/B4DZ9KMHwqJ8Ag-/0/1783656120527?e=1793232000&v=beta&t=tLe4_gE-hsjXt2DsZbeepw6U8vFyxEy6EbNhFiEAwng" alt="usuario">
-                <button class="icon-edit"><img src="/assets/edit-icon.png"></button>
-            </div>
-            <h2>Ana Beatriz{{usuarioLogado()?.nome}}</h2>
-            <p>AnaB_67</p>
-        </div>
-
-        <div class="list">
-            <div class="card">
-                <p class=" registro">12</p>
-                <p class="card-text">Registros</p>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="card">
-                <p class=" resolvidos">8</p>
-                <p class="card-text">Resolvidos</p>
-            </div>
-
-            <div class="divider"></div>
-
-
-            <div class="card">
-                <p class="andamento">2</p>
-                <p class="card-text">Andamento</p>
-            </div>
-        </div>
-
-
-        <a class="registrar esconder-no-mobile" routerLink="/registrar-ocorrencia">
-            <div>
-                <img class="icon-camera" src="/assets/camera-icon.svg">
-            </div>
-            <div class="text-button">
-                <span class="text-h1">Registrar ocorrência</span>
-            </div>
-        </a>
-
-
-        <div class="box-config">
-            <h3 class="text-config">Configurações</h3>
-            <div class="box-ul">
-                <a routerLink="/">
-                    <div class="card-li">
-                        <div class="flex-icon">
-                            <img src="/assets/user-icon.png">Dados pessoais
-                        </div>
-                        <img class="arrow" src="/assets/arrow-icon.png">
-
-
-                    </div>
-                </a>
-
-
-
-                <div class="card-li">
-                    <div class="flex-icon">
-                        <img src="/assets/bell-icon.png"> Notificações por email
-                    </div>
-
-                    <button (click)="aceitarNotificacao()" [class.active]="notificacao" class="btn">
-                        <span class="bolinha-btn"></span></button>
-
-
-                </div>
-
-
-                <a routerLink="/">
-                    <div class="card-li">
-
-                        <div class="flex-icon">
-                            <img src="/assets/info-icon.png">
-                            Sobre o SMAP
-                        </div>
-                        <img class="arrow" src="/assets/arrow-icon.png">
-
-                    </div>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <button class="sairDaConta" (click)="sair()">
-    <div>
-        <img class="exit-icon" src="/assets/exit-icon.png" >
-    </div>
-       <p>Sair da conta</p>
-    </button>
-    
-</section>
-<app-bottom-nav></app-bottom-nav>
+<app-header />
+<main class="profile-page">
+  <div class="profile-heading"><div><a class="text-link" routerLink="/perfil-usuario">← Voltar ao perfil</a><h1>Minha conta</h1></div></div>
+  <div class="account-grid">
+    <section class="panel account-summary" aria-labelledby="account-name">
+      <span class="avatar avatar-large" aria-hidden="true">{{ usuarioLogado()?.name?.charAt(0)?.toUpperCase() }}</span>
+      <h2 id="account-name">{{ usuarioLogado()?.name }}</h2>
+      <p>{{ usuarioLogado()?.email }}</p>
+      <span class="account-badge">Conta conectada</span>
+      <button type="button" class="logout" (click)="sair()"><img src="/assets/exit-icon.png" alt="" width="24" height="24">Sair da conta</button>
+    </section>
+    <section class="panel account-details" aria-labelledby="details-title">
+      <h2 id="details-title">Dados da conta</h2>
+      <dl><div><dt>Nome completo</dt><dd>{{ usuarioLogado()?.name }}</dd></div><div><dt>E-mail</dt><dd>{{ usuarioLogado()?.email }}</dd></div></dl>
+      <p class="notice">A edição dos dados e as notificações por e-mail ainda não estão disponíveis.</p>
+      <a class="secondary-link" routerLink="/home" fragment="como-funciona">Conheça o SMAP →</a>
+    </section>
+  </div>
+</main>
+<app-bottom-nav />

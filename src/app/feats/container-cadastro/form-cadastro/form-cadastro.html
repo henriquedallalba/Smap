@@ -1,117 +1,47 @@
 <form (submit)="cadastrar($event)">
-@if (etapa() === 1) {
-
-
-  <div class="etapa">
-  
+  @if (erro()) { <p class="errorValidators" role="alert">{{ erro() }}</p> }
+  <div class="nomeSobrenome">
     <div class="box-input">
-      <div>
-        <label [class.label-error]="cadastroForm.nome().touched() && cadastroForm.nome().invalid()" for="nome">Nome</label>
-        @if (cadastroForm.nome().touched() && cadastroForm.nome().invalid() ) {
-        @for (error of cadastroForm.nome().errors(); track $index) {
-        <span class="errorValidators">{{ error.message }}</span>}
-        }
-      </div>
-      <input [class.input-error]="cadastroForm.nome().touched() && cadastroForm.nome().invalid()" [formField]="cadastroForm.nome" id="nome" type="text" placeholder="Nome">
+      <label for="nome">Nome</label>
+      <input [formField]="cadastroForm.nome" id="nome" autocomplete="given-name" placeholder="Nome">
+      @if (cadastroForm.nome().touched() && cadastroForm.nome().invalid()) {
+        <span class="errorValidators">Informe seu nome (até 59 caracteres).</span>
+      }
     </div>
-
     <div class="box-input">
-      <div>
-        <label [class.label-error]="cadastroForm.sobreNome().touched() && cadastroForm.sobreNome().invalid()" for="sobrenome">Sobrenome</label>
-        @if (cadastroForm.sobreNome().touched() && cadastroForm.sobreNome().invalid() ) {
-        @for (error of cadastroForm.sobreNome().errors(); track $index) {
-        <span class="errorValidators">{{ error.message }}</span>}
-        }
-      </div>
-      <input [class.input-error]="cadastroForm.sobreNome().touched() && cadastroForm.sobreNome().invalid()" [formField]="cadastroForm.sobreNome" id="sobrenome" type="text" placeholder="sobrenome">
-    </div>
- 
-
-<div class="box-input">
-    <div>
-      <label [class.label-error]="cadastroForm.cpf().touched() && cadastroForm.cpf().invalid()" for="CPF">CPF</label>
-      @if (cadastroForm.cpf().touched() && cadastroForm.cpf().invalid() ) {
-      @for (error of cadastroForm.cpf().errors(); track $index) {
-      <span class="errorValidators">{{ error.message }}</span>}
+      <label for="sobrenome">Sobrenome</label>
+      <input [formField]="cadastroForm.sobreNome" id="sobrenome" autocomplete="family-name" placeholder="Sobrenome">
+      @if (cadastroForm.sobreNome().touched() && cadastroForm.sobreNome().invalid()) {
+        <span class="errorValidators">Informe seu sobrenome (até 60 caracteres).</span>
       }
     </div>
-    <input [class.input-error]="cadastroForm.cpf().touched() && cadastroForm.cpf().invalid()" [formField]="cadastroForm.cpf" id="CPF" type="text" placeholder="000.000.000-00">
   </div>
-
-
   <div class="box-input">
-    <div>
-      <label [class.label-error]="cadastroForm.email().touched() && cadastroForm.email().invalid()" for="email">E-mail</label>
-      @if (cadastroForm.email().touched() && cadastroForm.email().invalid() ) {
-      @for (error of cadastroForm.email().errors(); track $index) {
-      <span class="errorValidators">{{ error.message }}</span>}
-      }
-    </div>
-    <input [class.input-error]="cadastroForm.email().touched() && cadastroForm.email().invalid()" [formField]="cadastroForm.email" id="email" type="email" placeholder="email@gmail.com">
+    <label for="cpf">CPF</label>
+    <input [formField]="cadastroForm.cpf" id="cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" aria-describedby="cpf-hint">
+    <span class="hint" id="cpf-hint">Número privado, armazenado criptografado. Informá-lo não comprova identidade ou titularidade.</span>
   </div>
-
-</div> 
-
-
-   <button class="btn-etapa"
-      type="button"
-      (click)="proximaEtapa()">
-    Próximo
-    </button>
-
-}
-
-
-<!-- segunda etapa -->
-
-@if (etapa()===2) {
-  <div class="etapa">
   <div class="box-input">
-    <div>
-      <label [class.label-error]="cadastroForm.telefone().touched() && cadastroForm.telefone().invalid()" for="phone">Telefone</label>
-      @if (cadastroForm.telefone().touched() && cadastroForm.telefone().invalid() ) {
-      @for (error of cadastroForm.telefone().errors(); track $index) {
-      <span class="errorValidators">{{ error.message }}</span>}
-      }
-    </div>
-    <input [class.input-error]="cadastroForm.telefone().touched() && cadastroForm.telefone().invalid()" [formField]="cadastroForm.telefone" id="phone" type="tel" placeholder="(00) 99999-9999">
-  </div>
-
-  <div class="box-input">
-    <div>
-      <label [class.label-error]="cadastroForm.cep().touched() && cadastroForm.cep().invalid()" for="CEP">CEP</label>
-      @if (cadastroForm.cep().touched() && cadastroForm.cep().invalid() ) {
-      @for (error of cadastroForm.cep().errors(); track $index) {
-      <span class="errorValidators">{{ error.message }}</span>}
-      }
-    </div>
-    <input [class.input-error]="cadastroForm.cep().touched() && cadastroForm.cep().invalid()" [formField]="cadastroForm.cep" id="CEP" type="text" placeholder="00000-000">
-  </div>
-
-  <div class="box-input">
-
-    <label [class.label-error]="cadastroForm.senha().touched() && cadastroForm.senha().invalid()" for="password">Senha</label>
-    <input [class.input-error]="cadastroForm.senha().touched() && cadastroForm.senha().invalid()" [formField]="cadastroForm.senha" id="password" type="password" placeholder="Crie uma senha forte">
-    @if (cadastroForm.senha().touched() && cadastroForm.senha().invalid() ) {
-    @for (error of cadastroForm.senha().errors(); track $index) {
-    <span class="errorValidators">{{ error.message }}</span>}
+    <label for="email">E-mail</label>
+    <input [formField]="cadastroForm.email" id="email" type="email" autocomplete="email" placeholder="email@exemplo.com">
+    @if (cadastroForm.email().touched() && cadastroForm.email().invalid()) {
+      <span class="errorValidators">Informe um e-mail válido.</span>
     }
   </div>
-
-  <div class="box-input check-box">
-
-    <label [class.label-error]="cadastroForm.check().touched() && cadastroForm.check().invalid()" for="check" class="checkbox-custom">Li e aceito os <span>termos de uso</span></label>
-    <input [class.input-error]="cadastroForm.check().touched() && cadastroForm.check().invalid()" [formField]="cadastroForm.check" id="check" type="checkbox">
+  <div class="box-input">
+    <label for="password">Senha</label>
+    <input [formField]="cadastroForm.senha" id="password" type="password" autocomplete="new-password" aria-describedby="password-hint" placeholder="Pelo menos 12 caracteres">
+    <span class="hint" id="password-hint">Use pelo menos 12 caracteres e uma senha exclusiva.</span>
+    @if (cadastroForm.senha().touched() && cadastroForm.senha().invalid()) {
+      @for (error of cadastroForm.senha().errors(); track $index) {
+        <span class="errorValidators">{{ error.message }}</span>
+      }
+    }
   </div>
-
-  <button class="btn-etapa"
-  type="button"
-  (click)="voltarEtapa()">
-  Voltar
-</button>
-  <button>Criar conta</button>
-   </div>
-}
-
-  
+  <label class="legal-acceptance" for="aceite-termos">
+    <input id="aceite-termos" type="checkbox" required [checked]="aceitouTermos()" (change)="aceitouTermos.set($any($event.target).checked)">
+    <span>Li e aceito os <a routerLink="/termos" target="_blank" rel="noopener">Termos de Uso</a> e estou ciente da <a routerLink="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a>.</span>
+  </label>
+  <button type="submit" [disabled]="carregando() || cadastroForm().invalid() || !aceitouTermos()">{{ carregando() ? 'Criando conta…' : 'Criar conta' }}</button>
+  <p class="form-footer">Já tem uma conta? <a routerLink="/login" [queryParams]="{ returnUrl: route.snapshot.queryParamMap.get('returnUrl') }">Entrar</a></p>
 </form>

@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import {
   RouterLink,
   RouterLinkActive,
 } from '@angular/router';
+
+import { UserService } from '../../../feats/profile user/user-service/user-service';
 
 @Component({
   selector: 'app-admin-sidebar',
@@ -11,4 +13,4 @@ import {
   templateUrl: './admin-sidebar.html',
   styleUrl: './admin-sidebar.css',
 })
-export class AdminSidebar {}
+export class AdminSidebar { readonly auth=inject(UserService); }

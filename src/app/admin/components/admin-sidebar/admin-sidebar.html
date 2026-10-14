@@ -148,11 +148,11 @@
     </a>
 
     <div class="profile">
-      <div class="profile-avatar">CS</div>
+      <div class="profile-avatar">{{auth.usuarioLogado()?.name?.slice(0,2)?.toUpperCase()}}</div>
 
       <div class="profile-information">
-        <strong>Carlos Silva</strong>
-        <span>Coord. Geral</span>
+        <strong>{{auth.usuarioLogado()?.name}}</strong>
+        <span>{{auth.usuarioLogado()?.role === 'SUPREME' ? 'Supremo' : 'Administrador local'}}</span>
       </div>
     </div>
   </div>

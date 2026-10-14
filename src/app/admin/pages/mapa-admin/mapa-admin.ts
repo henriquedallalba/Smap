@@ -23,7 +23,8 @@ interface OcorrenciaApi {
   longitude?: number | string | null;
   criadaEm?: string | null;
   // ⚠️ ADICIONAR quando API tiver:
-  // status?: string;
+  status?: string;
+  moderacao?: string;
   // prioridade?: string;
 }
 
@@ -42,7 +43,7 @@ interface CategoriaLegenda {
 })
 export class MapaAdmin implements AfterViewInit, OnDestroy {
   private readonly http = inject(HttpClient);
-  private readonly apiBase = `${environment.apiUrl.replace(/\/+$/, '')}/ocorrencias`;
+  private readonly apiBase = `${environment.apiUrl.replace(/\/+$/, '')}/ocorrencias/admin`;
 
   @ViewChild('mapContainer', { static: true })
   private mapContainer!: ElementRef<HTMLDivElement>;
@@ -116,6 +117,7 @@ export class MapaAdmin implements AfterViewInit, OnDestroy {
       );
     }
 
+    if(this.filtroStatus()) lista=lista.filter(o=>o.status===this.filtroStatus());
     return lista;
   });
 
@@ -129,21 +131,12 @@ export class MapaAdmin implements AfterViewInit, OnDestroy {
       .slice(0, 5),
   );
 
-  // Resumo de status para o painel direito (mock por enquanto)
   protected readonly statusResumo = computed(() => {
-    const total = this.ocorrenciasFiltradas().length;
-    // ⚠️ Substituir por dados reais quando API tiver `status`
-    const altaPrioridade = Math.round(total * 0.4);
-    const emExecucao = Math.round(total * 0.5);
-    const concluidos = total - altaPrioridade - emExecucao;
-    return { total, altaPrioridade, emExecucao, concluidos };
+    const list=this.ocorrenciasFiltradas();
+    return {total:list.length,altaPrioridade:list.filter(o=>o.moderacao==='PENDENTE').length,
+      emExecucao:list.filter(o=>o.status==='EM_ANDAMENTO').length,concluidos:list.filter(o=>o.status==='RESOLVIDA').length};
   });
-
-  // Região exibida no painel direito
-  protected readonly regiaoAtual = computed(() => {
-    // Por enquanto fixo; depois pode ser calculado por bounding box
-    return 'Região Centro';
-  });
+  protected readonly regiaoAtual = computed(() => 'Seu território administrativo');
 
   constructor() {
     this.carregar();
@@ -243,11 +236,10 @@ export class MapaAdmin implements AfterViewInit, OnDestroy {
 
       const popup = document.createElement('div');
       popup.className = 'popup-ocorrencia';
-      popup.innerHTML = `
-        <strong>#${ocorrencia.id} ${ocorrencia.titulo}</strong>
-        <p>${ocorrencia.categoria} — ${ocorrencia.localizacao}</p>
-        <p>${ocorrencia.descricao}</p>
-      `;
+      const title=document.createElement('strong');title.textContent='#'+ocorrencia.id+' '+ocorrencia.titulo;
+      const location=document.createElement('p');location.textContent=ocorrencia.categoria+' — '+ocorrencia.localizacao;
+      const description=document.createElement('p');description.textContent=ocorrencia.descricao;
+      popup.append(title,location,description);
 
       const marcador = L.circleMarker(
           [Number(ocorrencia.latitude), Number(ocorrencia.longitude)],
@@ -276,4 +268,3 @@ export class MapaAdmin implements AfterViewInit, OnDestroy {
     }
   }
 }
-

@@ -1,26 +1,8 @@
-<section><div class="container">
-
-  <div class="saudacao">
-    <div class="bemvindo">
-      <h1>Bem-vindo ao</h1>
-      <img src="/assets/smap.png" />
-    </div>
-    <div class="texto">
-      Acesse sua conta para continuar transformando sua cidade.
-    </div>
-  </div>
-
-  <div class="formulario">
-    <app-form-login></app-form-login>
-    <div class="entrarComGoogleApple">
-      <button> <img src="/assets/Google.webp" width="24px">Google</button>
-      <button> <img src="/assets/apple-logo.png" width="24px">Apple</button>
-    </div>
-  </div>
-
-  
-    <p>Não tem conta?<a routerLink="/cadastro">Cadastre-se</a></p>
- 
-</div>
-<img class="personagem" src="/assets/personagem-login.png">
-</section>
+<app-header />
+<main class="auth-page">
+  <section class="auth-intro" aria-labelledby="login-title">
+    <div class="brand-heading"><h1 id="login-title">Bem-vindo ao</h1><img src="/assets/smap.png" alt="SMAP"></div>
+    <p>Acesse sua conta para continuar transformando sua cidade.</p>
+  </section>
+  <section class="auth-card" aria-label="Entrar na conta"><app-form-login /></section>
+</main>

@@ -1,87 +1,19 @@
 <section class="admin-page">
-  <header class="page-header">
-    <div>
-      <p class="page-eyebrow">Regiões</p>
-      <h2>Regiões e Indicadores</h2>
-      <p class="page-description">
-        Desenvolvimento administrativo por zonas urbanas
-      </p>
-    </div>
-
-    <button type="button" class="btn-filtrar" (click)="filtrarRegioes()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-      </svg>
-      Filtrar Regiões
-    </button>
-  </header>
-
-  <section class="kpi-grid">
-    @for (kpi of kpis; track kpi.titulo) {
-      <article class="kpi-card" [class]="'kpi-card--' + kpi.cor">
-        <p class="kpi-titulo">{{ kpi.titulo }}</p>
-        <p class="kpi-valor">{{ kpi.valor }}</p>
-        <p class="kpi-detalhe">{{ kpi.detalhe }}</p>
-      </article>
-    }
-  </section>
-
-  <section class="tabela-card">
-    <h3 class="tabela-titulo">Indicadores Gerais por Região</h3>
-
-    <div class="tabela-scroll">
-      <table class="tabela-indicadores">
-        <thead>
-          <tr>
-            <th>Região / Bairro</th>
-            <th class="col-num">Ocorrências</th>
-            <th class="col-num">Alta Prioridade</th>
-            <th class="col-num">Em Andamento</th>
-            <th class="col-num">Resolvidas</th>
-            <th class="col-num">Tempo Médio (Dias)</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (regiao of regioes; track regiao.nome) {
-            <tr>
-              <td class="col-nome">{{ regiao.nome }}</td>
-              <td class="col-num">{{ regiao.total }}</td>
-              <td class="col-num">
-                <span [class]="regiao.altaPrioridade > 0 ? 'valor-alerta' : ''">
-                  {{ regiao.altaPrioridade }}
-                </span>
-              </td>
-              <td class="col-num">{{ regiao.emAndamento }}</td>
-              <td class="col-num">{{ regiao.resolvidas }}</td>
-              <td class="col-num col-destaque">{{ regiao.tempoMedioDias }} dias</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <section class="graficos-grid">
-    <article class="grafico-card">
-      <h4 class="grafico-titulo">Tempo Médio de Resposta (Dias)</h4>
-      <div class="grafico-wrapper">
-        <div echarts [options]="lineChartOptions" class="echarts-container"></div>
-      </div>
-    </article>
-
-    <article class="grafico-card">
-      <h4 class="grafico-titulo">Casos Resolvidos</h4>
-      <div class="grafico-wrapper">
-        <div echarts [options]="donutChartOptions" class="echarts-container"></div>
-      </div>
-    </article>
-
-    <article class="grafico-card">
-      <h4 class="grafico-titulo">Volume Mensal de Chamados</h4>
-      <div class="grafico-wrapper">
-        <div echarts [options]="barChartOptions" class="echarts-container"></div>
-      </div>
-    </article>
-  </section>
+<h1>Territórios</h1><p>Regiões, cidades e bairros definem o alcance das contas administrativas.</p>
+@if(error()){<p class="notice" role="alert">{{error()}}</p>} @if(success()){<p class="notice" role="status">{{success()}}</p>}
+@if(service.supreme()){
+<form class="card" (ngSubmit)="create()"><h2>Novo território</h2><div class="grid">
+<label>Nome<input name="name" [(ngModel)]="name" required maxlength="120"></label>
+<label>Tipo<select name="kind" [(ngModel)]="kind"><option value="REGION">Região</option><option value="CITY">Cidade</option><option value="NEIGHBORHOOD">Bairro</option></select></label>
+<label>Código de referência<input name="externalCode" [(ngModel)]="externalCode" required maxlength="100" placeholder="Ex.: ibge:4202404"></label>
+<label>Território pai<select name="parent" [(ngModel)]="parentId"><option value="">Sem pai</option>@for(t of territories();track t.id){<option [value]="t.id">{{t.name}} — {{t.kind}}</option>}</select></label>
+</div><div class="actions"><button [disabled]="busy() || !name.trim() || !externalCode.trim()">Criar território</button></div></form>
+}
+<article class="card"><h2>Limites no mapa</h2>
+<label>Território<select [ngModel]="selected" (ngModelChange)="choose($event)"><option value="">Selecione</option>@for(t of territories();track t.id){<option [value]="t.id">{{t.name}} — {{t.kind}}</option>}</select></label>
+<p class="muted">Limites operacionais desenhados manualmente, não limites oficiais. Defina primeiro a região, depois a cidade e seus bairros. Somente o supremo altera os limites.</p>
+<div class="map" #mapContainer></div>
+@if(service.supreme()){<p>Clique em sequência no mapa para desenhar os vértices. Não repita o primeiro ponto.</p><div class="actions"><button class="secondary" (click)="undo()" [disabled]="busy()">Desfazer ponto</button><button class="secondary" (click)="clear()" [disabled]="busy()">Limpar desenho</button><button (click)="save()" [disabled]="busy() || !selected || points().length<3">Salvar {{points().length}} vértices</button></div>}
+</article>
+<div class="card table-wrap"><table><thead><tr><th>Nome</th><th>Tipo</th><th>Limite</th></tr></thead><tbody>@for(t of territories();track t.id){<tr><td>{{t.name}}</td><td>{{t.kind}}</td><td>{{t.boundary?.length ? 'Definido' : 'Não definido'}}</td></tr>} @empty {<tr><td colspan="3">Nenhum território disponível.</td></tr>}</tbody></table></div>
 </section>

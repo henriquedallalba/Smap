@@ -1,0 +1,26 @@
+:host { display: block; width: 100%; min-width: 0; }
+form { display: flex; flex-direction: column; gap: 20px; }
+.caixa-input, .box-input { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+label { color: #334155; font-size: 14px; font-weight: 600; }
+input { width: 100%; min-width: 0; min-height: 50px; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 12px; background: #f7f8fa; color: #0d1b2a; font: inherit; font-size: 16px; }
+input::placeholder { color: #64748b; opacity: 1; }
+input:focus-visible { outline: 3px solid rgb(22 193 163 / 25%); border-color: #087e70; outline-offset: 1px; }
+input.input-error, input[aria-invalid="true"] { border-color: #b42318; }
+.box-validators { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.errorValidators, .label-error { color: #b42318; }
+.errorValidators { font-size: 13px; font-weight: 500; overflow-wrap: anywhere; }
+p[role="alert"] { padding: 12px 14px; background: #fff1f0; border-radius: 10px; border: 1px solid #fecdca; }
+p[role="status"] { padding: 12px 14px; border-radius: 10px; background: #e9f8f4; color: #087e70; font-size: 14px; }
+button { width: 100%; min-height: 50px; padding: 12px 16px; border: 0; border-radius: 12px; background: #16c1a3; color: #0d1b2a; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; transition: background .2s ease; }
+button:hover:not(:disabled) { background: #12ad92; }
+button:disabled { opacity: .55; cursor: not-allowed; }
+button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid #087e70; outline-offset: 3px; }
+a { color: #087e70; font-size: 14px; font-weight: 600; text-align: center; min-height: 44px; display: inline-flex; justify-content: center; align-items: center; }
+a:hover { text-decoration: underline; }
+details { border-top: 1px solid #e2e8f0; padding-top: 16px; }
+summary { color: #64748b; font-size: 13px; cursor: pointer; padding-block: 6px; }
+details[open] .caixa-input { margin-top: 12px; }
+.nomeSobrenome { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.form-footer { color: #64748b; font-size: 14px; text-align: center; }
+.hint { color: #64748b; font-size: 12px; }
+@media (max-width: 479px) { .nomeSobrenome { grid-template-columns: 1fr; gap: 20px; } }

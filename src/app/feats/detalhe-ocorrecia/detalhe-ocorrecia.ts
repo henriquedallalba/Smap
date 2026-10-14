@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { OccurrenceImage } from '../../shared/occurrence-image';
 import { httpResource } from '@angular/common/http';
 import { Ocorrencia } from '../ocorrencia';
 import { environment } from '../../../environments/environment';
@@ -6,7 +7,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { BottomNav } from '../../components/bottom-nav/bottom-nav';
 
 @Component({
-  imports: [BottomNav, RouterLink],
+  imports: [BottomNav, RouterLink, OccurrenceImage],
   selector: 'app-detalhe-ocorrecia',
   styleUrl: './detalhe-ocorrecia.css',
   templateUrl: './detalhe-ocorrecia.html',
@@ -18,7 +19,7 @@ export class DetalheOcorrecia {
   protected readonly id = this.route.snapshot.paramMap.get('id');
 
   protected readonly ocorrenciaDetail = httpResource<Ocorrencia>(
-    () => `${this.urlApi}/${this.id}`,
+    () => this.route.snapshot.queryParamMap.get('minhas') === 'true' ? `${this.urlApi}/minhas/${this.id}` : `${this.urlApi}/${this.id}`,
   );
 
   protected formatarData(valor: string): string {

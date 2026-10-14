@@ -1,0 +1,15 @@
+name: Frontend tests and production build
+on: [push, pull_request]
+permissions: {contents: read}
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '24', cache: npm}
+      - run: npm ci
+      - run: npm test -- --watch=false --include='src/app/auth/*.spec.ts'
+      - run: npm run build -- --configuration production
+      - run: docker build -f deploy/Dockerfile -t smap-web-ci .
+      - run: docker run --rm --add-host=smap-api:127.0.0.1 --add-host=smap-auth:127.0.0.1 smap-web-ci nginx -t

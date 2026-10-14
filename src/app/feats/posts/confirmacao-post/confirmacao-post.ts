@@ -26,7 +26,7 @@ export class ConfirmacaoPost {
   
   // metodo get
    readonly ocorrenciaDetail = httpResource<Ocorrencia>(
-        () => this.urlApi+'/'+ this.id
+        () => this.urlApi+'/minhas/'+ this.id
     )
 
 

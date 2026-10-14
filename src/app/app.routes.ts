@@ -1,4 +1,7 @@
 import { Routes } from '@angular/router';
+import { LegalPage } from './legal/legal-page';
+import { adminGuard } from './auth/admin.guard';
+import { authGuard } from './auth/auth.guard';
 import { Header } from './component/header/header';
 import { ContainerLogin } from './feats/container-login/container-login';
 import { Hero } from './feats/home/hero/hero';
@@ -11,29 +14,32 @@ import { TelaOcorrencias } from './pages/tela-ocorrencias/tela-ocorrencias';
 import { OcorrenciasRegistradas } from './feats/ocorrencias-registradas/ocorrencias-registradas';
 import { DetalheOcorrecia } from './feats/detalhe-ocorrecia/detalhe-ocorrecia';
 import { FullMap } from './pages/full-map/full-map';
-import { LoginComponente } from './admin/pages/login-componente/login-componente';
 
 export const routes: Routes = [
+  { path: 'termos', component: LegalPage, data: { document: 'terms' }, title: 'Termos de Uso | SMAP' },
+  { path: 'privacidade', component: LegalPage, data: { document: 'privacy' }, title: 'Privacidade | SMAP' },
   { path: 'home', component: Home },
   { path: 'header', component: Header },
   { path: 'hero', component: Hero },
   { path: 'login', component: ContainerLogin },
-  { path: 'loginAdmin', component: LoginComponente },
-  { path: 'perfil-usuario', component: ProfileHome },
-  { path: 'perfil-config', component: ProfileConfig },
+  { path: 'perfil-usuario', component: ProfileHome, canActivate: [authGuard] },
+  { path: 'perfil-config', component: ProfileConfig, canActivate: [authGuard] },
   { path: 'cadastro', component: ContainerCadastro },
-  { path: 'confirmacao-ocorrencia', component: ConfirmacaoPost },
-  { path: 'ocorrenciasRegistrada', component: OcorrenciasRegistradas },
+  { path: 'confirmacao-ocorrencia', component: ConfirmacaoPost, canActivate: [authGuard] },
+  { path: 'ocorrenciasRegistrada', component: OcorrenciasRegistradas, canActivate: [authGuard] },
   { path: 'detalheOcorrencia/:id', component: DetalheOcorrecia },
-  { path: 'confirmacao-ocorrencia/:id', component: ConfirmacaoPost },
+  { path: 'confirmacao-ocorrencia/:id', component: ConfirmacaoPost, canActivate: [authGuard] },
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   {
     path: 'registrar-ocorrencia',
+    canActivate: [authGuard],
     title: 'Mapa | SMAP',
     loadComponent: () => import('./pages/mapa/mapa').then((m) => m.Mapa),
   },
   {
     path: 'admin',
+    canActivate: [adminGuard],
+    canActivateChild: [adminGuard],
     loadComponent: () =>
       import('./admin/layouts/admin-layout/admin-layout').then((m) => m.AdminLayout),
     children: [

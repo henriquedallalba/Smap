@@ -8,5 +8,7 @@ export interface Ocorrencia {
   titulo: string;
   localizacao: string;
   status?: 'PENDENTE' | 'EM_ANDAMENTO' | 'RESOLVIDA';
+  moderacao?: 'PENDENTE'|'APROVADA'|'REJEITADA'|null;
+  motivoModeracao?: string|null;
   imagemUrl?: string | null;
 }

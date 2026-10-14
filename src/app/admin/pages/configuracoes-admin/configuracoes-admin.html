@@ -1,163 +1,18 @@
-<section class="admin-page">
-  <header class="page-header">
-    <p class="page-eyebrow">Configurações</p>
-    <h2>Configurações</h2>
-    <p class="page-description">
-      Gerenciamento geral da plataforma e parâmetros operacionais
-    </p>
-  </header>
-
-  <article class="card perfil-card">
-    <h3 class="card-titulo">Perfil do Administrador</h3>
-
-    <div class="perfil-conteudo">
-      <div class="perfil-avatar">{{ perfil.iniciais }}</div>
-
-      <div class="perfil-info">
-        <p class="perfil-nome">{{ perfil.nome }}</p>
-        <p class="perfil-email">{{ perfil.email }}</p>
-        <span class="perfil-badge">{{ perfil.papel }}</span>
-      </div>
-    </div>
-  </article>
-
-  <div class="grid-cards">
-    <article class="card">
-      <header class="card-header">
-        <h3 class="card-titulo">Categorias de Ocorrências</h3>
-        <button type="button" class="btn-nova" (click)="abrirCriar()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          Nova
-        </button>
-      </header>
-
-      <ul class="categorias-lista">
-        @for (categoria of categorias(); track categoria.id) {
-          <li class="categoria-item">
-            <span class="categoria-icone">{{ categoria.icone }}</span>
-            <span class="categoria-nome">{{ categoria.nome }}</span>
-
-            <div class="categoria-acoes">
-              <button type="button" class="btn-icone" (click)="abrirEditar(categoria)" aria-label="Editar">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 20h9"></path>
-                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                </svg>
-              </button>
-
-              <button type="button" class="btn-icone btn-icone--perigo" (click)="abrirDeletar(categoria)" aria-label="Deletar">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="3 6 5 6 21 6"></polyline>
-                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
-                  <path d="M10 11v6"></path>
-                  <path d="M14 11v6"></path>
-                </svg>
-              </button>
-            </div>
-          </li>
-        } @empty {
-          <li class="categorias-vazio">Nenhuma categoria cadastrada.</li>
-        }
-      </ul>
-    </article>
-
-    <article class="card">
-      <h3 class="card-titulo">Prazos de Resolução</h3>
-
-      <div class="prazos-header">
-        <span>Prioridade</span>
-        <span>Tempo Limite</span>
-      </div>
-
-      <ul class="prazos-lista">
-        @for (prazo of prazos; track prazo.prioridade) {
-          <li class="prazo-item">
-            <span class="prazo-prioridade">
-              <span class="prazo-dot" [class]="'prazo-dot--' + prazo.cor"></span>
-              {{ prazo.prioridade }}
-            </span>
-            <span class="prazo-badge" [class]="'prazo-badge--' + prazo.cor">
-              {{ prazo.dias }} dias
-            </span>
-          </li>
-        }
-      </ul>
-    </article>
-  </div>
+<section class="admin-page"><h1>Administração e segurança</h1>
+<p>{{service.auth.usuarioLogado()?.name}} — {{service.auth.usuarioLogado()?.role === 'SUPREME' ? 'Administrador supremo' : 'Administrador territorial'}}</p>
+@if(error()){<p class="notice" role="alert">{{error()}}</p>} @if(success()){<p class="notice" role="status">{{success()}}</p>}
+@if(service.can('DELEGATE')){
+<form class="card" (ngSubmit)="create()"><h2>Criar conta administrativa</h2><p>Você só pode conceder permissões e territórios que estão sob sua responsabilidade.</p>
+<div class="grid"><label>Nome<input name="name" [(ngModel)]="name" required maxlength="120"></label>
+<label>E-mail<input name="email" type="email" [(ngModel)]="email" required maxlength="254"></label>
+<label>Senha inicial<input name="password" type="password" [(ngModel)]="password" required minlength="12" maxlength="72" autocomplete="new-password"></label>
+<label>Território<select name="territory" [(ngModel)]="territoryId" required><option value="">Selecione</option>@for(t of territories();track t.id){<option [value]="t.id">{{t.name}} — {{t.kind}}</option>}</select></label></div>
+<fieldset><legend>Permissões</legend>@for(p of options;track p.id){@if(service.can(p.id)){<label class="check"><input type="checkbox" [checked]="permissions.includes(p.id)" (change)="toggle(p.id,$any($event.target).checked)">{{p.label}}</label>}}</fieldset>
+<div class="actions"><button [disabled]="busy() || !territoryId || permissions.length===0">Criar conta</button></div></form>
+}
+<article class="card table-wrap"><h2>Contas sob sua gestão</h2><table><thead><tr><th>Nome</th><th>Território</th><th>Permissões</th><th>Acesso</th></tr></thead><tbody>
+@for(a of admins();track a.id){<tr><td>{{a.name}}<br>{{a.email}}</td><td>{{territory(a.territoryId)}}</td><td>{{a.permissions.join(', ')}}</td><td>@if(a.active){<button class="danger" (click)="disable(a.id)" [disabled]="busy()">Desativar</button>}@else{Desativada}</td></tr>}@empty{<tr><td colspan="4">Nenhuma conta delegada disponível.</td></tr>}</tbody></table></article>
+@if(service.can('BAN')){<article class="card table-wrap"><h2>Banimentos</h2><p>Para aplicar um banimento, abra a ocorrência e identifique o autor com sua permissão administrativa.</p><table><thead><tr><th>Conta</th><th>Alcance</th><th>Motivo</th><th>Estado</th></tr></thead><tbody>
+@for(b of bans();track b.id){<tr><td><code>{{b.accountId}}</code></td><td>{{territory(b.territoryId)}}</td><td>{{b.reason}}</td><td>@if(b.revokedAt===null){<button class="secondary" [disabled]="busy()" (click)="revoke(b.id)">Revogar</button>}@else{Revogado}</td></tr>}@empty{<tr><td colspan="4">Nenhum banimento disponível.</td></tr>}</tbody></table></article>}
+@if(service.supreme()){<article class="card table-wrap"><h2>Auditoria da autenticação</h2><table><thead><tr><th>Data</th><th>Ação</th><th>Responsável</th><th>Alvo</th></tr></thead><tbody>@for(a of audit();track a.id){<tr><td>{{a.occurredAt | date:'dd/MM/yyyy HH:mm'}}</td><td>{{a.action}}</td><td><code>{{a.actorId}}</code></td><td><code>{{a.targetId}}</code></td></tr>}@empty{<tr><td colspan="4">Nenhum evento.</td></tr>}</tbody></table></article>}
 </section>
-
-@if (modoModal() === 'criar' || modoModal() === 'editar') {
-  <div class="modal-overlay" (click)="fecharModal()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <header class="modal-header">
-        <h3>{{ tituloModal() }}</h3>
-        <button type="button" class="modal-fechar" (click)="fecharModal()" aria-label="Fechar">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </header>
-
-      <div class="modal-body">
-        <label class="campo">
-          <span class="campo-label">Nome da categoria</span>
-          <input type="text" class="campo-input" placeholder="Ex: Buracos na via"
-                 [ngModel]="formNome()" (ngModelChange)="formNome.set($event)" />
-        </label>
-
-        <label class="campo">
-          <span class="campo-label">Ícone (opcional)</span>
-          <input type="text" class="campo-input" placeholder="Ex: 🕳️" maxlength="2"
-                 [ngModel]="formIcone()" (ngModelChange)="formIcone.set($event)" />
-        </label>
-      </div>
-
-      <footer class="modal-footer">
-        <button type="button" class="btn-cancelar" (click)="fecharModal()">Cancelar</button>
-        <button type="button" class="btn-salvar" (click)="salvar()" [disabled]="!formNome().trim()">
-          Salvar
-        </button>
-      </footer>
-    </div>
-  </div>
-}
-
-@if (modoModal() === 'deletar') {
-  <div class="modal-overlay" (click)="fecharModal()">
-    <div class="modal modal--deletar" (click)="$event.stopPropagation()">
-      <header class="modal-header">
-        <h3>{{ tituloModal() }}</h3>
-        <button type="button" class="modal-fechar" (click)="fecharModal()" aria-label="Fechar">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </header>
-
-      <div class="modal-body">
-        <p class="deletar-texto">
-          Tem certeza que deseja deletar a categoria
-          <strong>{{ categoriaEmEdicao()?.nome }}</strong>?
-        </p>
-        <p class="deletar-aviso">Essa ação não pode ser desfeita.</p>
-      </div>
-
-      <footer class="modal-footer">
-        <button type="button" class="btn-cancelar" (click)="fecharModal()">Cancelar</button>
-        <button type="button" class="btn-deletar" (click)="confirmarDeletar()">
-          Deletar
-        </button>
-      </footer>
-    </div>
-  </div>
-}

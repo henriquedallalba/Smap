@@ -1,4 +1,11 @@
 <form (submit)="fazerLogin($event)">
+  @if (route.snapshot.queryParamMap.get('returnUrl')) {
+    <p role="status">Entre na sua conta para continuar.</p>
+  }
+  @if (route.snapshot.queryParamMap.get('cadastro') === 'sucesso') {
+    <p role="status">Conta criada! Entre com seu e-mail e senha.</p>
+  }
+  @if (erro()) { <p class="errorValidators" role="alert">{{ erro() }}</p> }
 
   <div class="caixa-input">
 
@@ -8,7 +15,7 @@
       @if (loginForm.email().touched() && loginForm.email().invalid() ) {
       @for (error of loginForm.email().errors(); track error.kind) { <span class="errorValidators">{{ error.message }}</span>}}
     </div>
-    <input [formField]="loginForm.email" id="email" type="email" placeholder="E-mail" [class.input-error]="loginForm.email().touched() && loginForm.email().invalid() ">
+    <input [formField]="loginForm.email" id="email" type="email" autocomplete="email" placeholder="email@exemplo.com" [class.input-error]="loginForm.email().touched() && loginForm.email().invalid() ">
 
   </div>
 
@@ -18,17 +25,19 @@
       @for (error of loginForm.senha().errors(); track error.kind) { <span class="errorValidators">{{ error.message }}</span>}
       }
     </div>
-    <input [formField]="loginForm.senha" id="password" type="password" placeholder="Senha" [class.input-error]="loginForm.senha().touched() && loginForm.senha().invalid() ">
+    <input [formField]="loginForm.senha" id="password" type="password" autocomplete="current-password" placeholder="Sua senha" [class.input-error]="loginForm.senha().touched() && loginForm.senha().invalid() ">
 
   </div>
 
-  <a routerLink="/">Esqueceu a senha?</a>
-  <button>Entrar</button>
+  <details>
+    <summary>Tenho um código de autenticação em duas etapas</summary>
+    <div class="caixa-input">
+      <label for="codigo">Código do autenticador</label>
+      <input id="codigo" type="text" inputmode="numeric" autocomplete="one-time-code"
+        maxlength="6" pattern="[0-9]{6}" [value]="codigo()" (input)="codigo.set($any($event.target).value)" />
+    </div>
+  </details>
+  <button type="submit" [disabled]="carregando()">{{ carregando() ? 'Entrando…' : 'Entrar' }}</button>
+  <p class="form-footer">Ainda não tem uma conta? <a routerLink="/cadastro" [queryParams]="{ returnUrl: route.snapshot.queryParamMap.get('returnUrl') }">Criar conta</a></p>
 
-  <div class="detalhe">
-    <div></div>
-    <p>ou</p>
-    <div></div>
-
-  </div>
 </form>

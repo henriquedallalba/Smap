@@ -1,17 +1,25 @@
 import { Component, inject } from '@angular/core';
-import { ConsumoApi } from '../posts/consumo-api';
+import { OccurrenceImage } from '../../shared/occurrence-image';
+import { httpResource } from '@angular/common/http';
+import { UserService } from '../profile user/user-service/user-service';
+import { Ocorrencia } from '../ocorrencia';
+import { environment } from '../../../environments/environment';
+import { Header } from '../../component/header/header';
 import { RouterLink } from '@angular/router';
 import { BottomNav } from '../../components/bottom-nav/bottom-nav';
-import { TelaOcorrencias } from '../../pages/tela-ocorrencias/tela-ocorrencias';
 
 @Component({
-  imports: [RouterLink, BottomNav, TelaOcorrencias],
+  imports: [RouterLink, BottomNav, Header, OccurrenceImage],
   selector: 'app-ocorrencias-registradas',
   styleUrl: './ocorrencias-registradas.css',
   templateUrl: './ocorrencias-registradas.html',
 })
 export class OcorrenciasRegistradas {
 
-  protected readonly consumoService = inject(ConsumoApi)
+  readonly auth = inject(UserService);
+  readonly minhas = httpResource<Ocorrencia[]>(() => this.auth.usuarioLogado() ? {
+    url: environment.apiUrl.replace(/\/+$/, '') + '/ocorrencias/minhas',
+    headers: { Authorization: 'Bearer ' + this.auth.token() },
+  } : undefined, { defaultValue: [] });
 
 }

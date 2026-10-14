@@ -1,0 +1,68 @@
+# Separate production stack. Never reuse/recreate the old MySQL container blindly.
+name: smap-production
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    ports: ["127.0.0.1:8090:80"]
+    networks:
+      shared:
+        aliases: [smap-web]
+    depends_on: [api, auth]
+    restart: unless-stopped
+  api:
+    build: ${SMAP_API_PATH:?Set the API repository absolute path}
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/ocorrencias
+      SPRING_DATASOURCE_USERNAME: smap
+      SPRING_DATASOURCE_PASSWORD: ${SMAP_DB_PASSWORD:?Set a unique database password}
+      AUTH_SERVICE_URL: http://smap-auth:8081
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+    volumes:
+      - type: bind
+        source: ${SMAP_UPLOADS_PATH:?Set the existing persistent uploads directory}
+        target: /app/uploads
+    networks:
+      default:
+      shared:
+        aliases: [smap-api]
+    depends_on:
+      db: {condition: service_healthy}
+    restart: unless-stopped
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: ocorrencias
+      MYSQL_USER: smap
+      MYSQL_PASSWORD: ${SMAP_DB_PASSWORD:?Set a unique database password}
+      MYSQL_ROOT_PASSWORD: ${SMAP_DB_ROOT_PASSWORD:?Set a separate root password}
+    volumes: ["mysql-data:/var/lib/mysql"]
+    healthcheck:
+      test: ["CMD-SHELL", 'MYSQL_PWD="$$MYSQL_PASSWORD" mysql -u smap -e "USE ocorrencias;"']
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+  auth:
+    build: ${SMAP_AUTH_PATH:?Set the updated auth repository absolute path}
+    environment:
+      PORT: "8081"
+      AUTH_ENCRYPTION_KEY: ${AUTH_ENCRYPTION_KEY:?Reuse the existing encryption key}
+      AUTH_ALLOWED_ORIGINS: https://smartmap.tech,https://www.smartmap.tech,http://localhost:8090
+      AUTH_DB_URL: jdbc:h2:file:/app/data/auth;MODE=MySQL;DATABASE_TO_LOWER=TRUE
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+    volumes: ["auth-data:/app/data"]
+    networks:
+      shared:
+        aliases: [smap-auth]
+    restart: unless-stopped
+volumes:
+  mysql-data:
+  auth-data:
+    external: true
+    name: auth-smap_auth-data
+networks:
+  shared:
+    external: true
+    name: smap-auth-network

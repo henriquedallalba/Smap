@@ -2,6 +2,6 @@ const apiHost = typeof window !== 'undefined' ? window.location.hostname : 'loca
 
 export const environment = {
   // Endereço base do backend, sem /ocorrencias. Pode incluir um prefixo como /api.
-  apiUrl: `http://${apiHost}:18080`,
+  apiUrl: `http://${apiHost}:8080`,
   authUrl: `http://${apiHost}:8081`,
 };

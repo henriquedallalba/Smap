@@ -1,9 +1,15 @@
 param(
   [string]$ApiUrl = 'http://localhost:8080',
-  [string]$FrontendUrl = 'http://localhost:4200'
+  [string]$FrontendUrl = 'http://localhost:4200',
+  [switch]$ConfirmDemo
 )
 
 $ErrorActionPreference = 'Stop'
+if (-not $ConfirmDemo) { throw 'Somente dados ficticios. Execute com -ConfirmDemo em ambiente de teste, nunca em um mapa real.' }
+$secureToken = Read-Host 'Token da conta de teste (nao sera salvo)' -AsSecureString
+$token = [System.Net.NetworkCredential]::new('', $secureToken).Password
+if ($token -notmatch '^[A-Za-z0-9_-]{43}$') { throw 'Token invalido.' }
+$headers = @{ Authorization = 'Bearer ' + $token }
 $endpoint = "$($ApiUrl.TrimEnd('/'))/ocorrencias"
 $assets = "$($FrontendUrl.TrimEnd('/'))/assets/ocorrencias"
 
@@ -85,7 +91,7 @@ foreach ($ocorrencia in $ocorrencias) {
   }
 
   $body = $ocorrencia | ConvertTo-Json -Depth 4
-  $salva = Invoke-RestMethod -Method Post -Uri $endpoint -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($body))
+  $salva = Invoke-RestMethod -Method Post -Uri $endpoint -Headers $headers -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($body))
   Write-Host "Criada #$($salva.id): $($salva.titulo)"
   $criadas++
 }

@@ -1,0 +1,19 @@
+name: Authentication integration
+on:
+  push:
+    branches: [feat/autenticacao-ocorrencias]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx ng test --watch=false --include="src/app/auth/*.spec.ts" --include=src/app/component/header/header.spec.ts
+      - run: npm run build

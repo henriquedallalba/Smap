@@ -1,17 +1,9 @@
-<section>
-
-  <div class="criarConta">
-    <a (click)="voltar()">
-      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#0D1B2A">
-        <path d="M400-80 0-480l400-400 71 71-329 329 329 329-71 71Z" />
-      </svg>
-    </a>
-
-    <h1>Criar conta</h1>
-  </div>
-
-  <app-form-cadastro></app-form-cadastro>
-  <div class="login">
-    <p>Já tem uma conta? <a routerLink="/login">Entrar</a> </p>
-  </div>
-</section>
+<app-header />
+<main class="auth-page">
+  <section class="auth-intro" aria-labelledby="cadastro-title">
+    <a class="back-link" routerLink="/login" queryParamsHandling="preserve">← Voltar para entrar</a>
+    <h1 id="cadastro-title">Criar conta</h1>
+    <p>Faça parte de uma cidade melhor. Comece por aqui.</p>
+  </section>
+  <section class="auth-card" aria-label="Cadastro de usuário"><app-form-cadastro /></section>
+</main>

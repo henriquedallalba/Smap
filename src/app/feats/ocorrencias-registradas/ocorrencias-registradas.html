@@ -1,48 +1,25 @@
-<div class="content">
-    <div>
-        <h1 class="title">Minhas ocorrências</h1>
-    </div>
-    
-        @if (consumoService.listarOcorrenciasResource.isLoading()) {
-    
-            <div class="card-loading">
-                <span class="loader"></span>
-                <p>Carregando ocorrência...</p>
-            </div>
-    
-        } @else if (consumoService.listarOcorrenciasResource.error()) {
-    
-            <div class="card-error">
-                <span>!</span>
-                <p>Não foi possível carregar a ocorrência.</p>
-            </div>
-    
-        } @else if (consumoService.listarOcorrenciasResource.hasValue()) {
-    
-            @for (ocorrencia of consumoService.listarOcorrenciasResource.value(); track ocorrencia.id) {
-              <a [routerLink]="['/detalheOcorrencia', ocorrencia.id]">
-                  <div class="card-content">
-          
-                      @if (ocorrencia.imagemUrl) {
-                        <img class="card-image" [src]="ocorrencia.imagemUrl" [alt]="'Imagem da ocorrência: ' + ocorrencia.titulo">
-                      } @else {
-                        <div class="success-icon">✓</div>
-                      }
-          
-                      <div class="card-info">
-                          <span>Ocorrência registrada</span>
-          
-                          <h2>
-                              {{ocorrencia.titulo}}
-                          </h2>
-                      </div>
-          
-                  </div>
-              </a>
-            } @empty {
-                <app-tela-ocorrencias></app-tela-ocorrencias>
-            }
-    
-        }
-</div>
-<app-bottom-nav></app-bottom-nav>
+<app-header />
+<main class="content">
+  <div><h1 class="title">Minhas ocorrências</h1></div>
+  @if (!auth.usuarioLogado()) {
+    <div class="card-error" role="status"><p>Sua sessão terminou. <a routerLink="/login" [queryParams]="{returnUrl: '/ocorrenciasRegistrada'}">Entre novamente</a> para ver suas ocorrências.</p></div>
+  } @else if (minhas.isLoading()) {
+    <div class="card-loading" role="status"><span class="loader" aria-hidden="true"></span><p>Carregando suas ocorrências...</p></div>
+  } @else if (minhas.error()) {
+    <div class="card-error" role="alert"><p>Não foi possível carregar suas ocorrências.</p><button type="button" (click)="minhas.reload()">Tentar novamente</button></div>
+  } @else {
+    @for (ocorrencia of minhas.value(); track ocorrencia.id) {
+      <a [routerLink]="['/detalheOcorrencia', ocorrencia.id]" [queryParams]="{minhas: true}">
+        <article class="card-content">
+          @if (ocorrencia.imagemUrl) {
+            <img class="card-image" [smapImage]="ocorrencia.imagemUrl" [alt]="'Imagem da ocorrência: ' + ocorrencia.titulo">
+          } @else { <div class="success-icon" aria-hidden="true">✓</div> }
+          <div class="card-info"><span>{{ocorrencia.moderacao === 'PENDENTE' ? 'Aguardando aprovação' : ocorrencia.moderacao === 'REJEITADA' ? 'Recusada' : 'Publicada'}}</span><h2>{{ ocorrencia.titulo }}</h2></div>
+        </article>
+      </a>
+    } @empty {
+      <div class="card-empty"><h2>Você ainda não tem ocorrências</h2><p>As ocorrências registradas com esta conta aparecerão aqui.</p><a routerLink="/registrar-ocorrencia">Registrar minha primeira ocorrência</a></div>
+    }
+  }
+</main>
+<app-bottom-nav />

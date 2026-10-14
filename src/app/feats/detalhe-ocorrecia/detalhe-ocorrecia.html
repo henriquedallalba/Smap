@@ -23,7 +23,7 @@
       <article class="detail-content">
         @if (ocorrencia.imagemUrl) {
           <figure class="hero-image">
-            <img [src]="ocorrencia.imagemUrl" [alt]="'Foto da ocorrência: ' + ocorrencia.titulo">
+            <img [smapImage]="ocorrencia.imagemUrl" [alt]="'Foto da ocorrência: ' + ocorrencia.titulo">
           </figure>
         }
 

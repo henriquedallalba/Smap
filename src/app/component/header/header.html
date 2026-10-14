@@ -6,8 +6,19 @@
         </a>
 
         <nav class="login" aria-label="Acesso">
+            @if (auth.usuarioLogado(); as usuario) {
+            <a routerLink="/perfil-usuario" class="btn-perfil" aria-label="Acessar meu perfil">
+                <span class="avatar" aria-hidden="true">{{ usuario.name.charAt(0).toUpperCase() }}</span>
+                <span class="account-name">{{ usuario.name }}</span>
+            </a>
+            @if (usuario.role === 'ADMIN' || usuario.role === 'SUPREME') {
+              <a routerLink="/admin/dashboard" class="btn-perfil">Administração</a>
+            }
+            <button type="button" class="btn-sair" (click)="sair()">Sair</button>
+            } @else {
             <a routerLink="/login" class="btn-entrar">Entrar</a>
             <a routerLink="/cadastro" class="btn-conta">Criar conta</a>
+            }
         </nav>
     </div>
 </header>

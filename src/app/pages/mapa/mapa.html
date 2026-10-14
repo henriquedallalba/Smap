@@ -145,7 +145,7 @@
       @for (item of ocorrencias(); track item.id) {
         <article>
           @if (item.imagemUrl) {
-            <img class="occurrence-thumbnail" [src]="item.imagemUrl" [alt]="'Imagem da ocorrência: ' + item.titulo">
+            <img class="occurrence-thumbnail" [smapImage]="item.imagemUrl" [alt]="'Imagem da ocorrência: ' + item.titulo">
           }
           <div>
           <strong>{{ item.titulo || item.categoria }}</strong>
