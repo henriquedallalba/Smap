@@ -232,6 +232,10 @@ export class Mapa implements AfterViewInit, OnDestroy {
       error: (error: HttpErrorResponse) => {
         this.erro.set(error.status === 0
           ? 'Não foi possível conectar à API. Verifique se o servidor está disponível e tente novamente.'
+          : error.status === 401
+            ? 'Sua sessão expirou ou você não está autenticado. Faça login novamente antes de registrar a ocorrência.'
+            : error.status === 503
+              ? 'O serviço de autenticação está indisponível. Inicie a auth-smap e tente novamente.'
           : error.status === 413
             ? 'A imagem ficou maior que o limite aceito pela API.'
             : 'O servidor não conseguiu salvar a ocorrência. Confira os dados e tente novamente.');
@@ -368,4 +372,5 @@ export class Mapa implements AfterViewInit, OnDestroy {
     this.imagemPreviewUrl.set(null);
   }
 }
+
 
