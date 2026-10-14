@@ -71,8 +71,7 @@ export class FormCadastro {
   cadastrar(event: SubmitEvent) {
     event.preventDefault();
     if (this.cadastroForm().invalid()) return;
-    this.usuarioService.cadastrar(this.cadastroModel());
-    this.cadastroForm().reset();
-    this.router.navigate(['/login']);
+    this.usuarioService.cadastrar(this.cadastroModel()).subscribe({ next: () => { this.cadastroForm().reset(); this.router.navigate(['/login']); }, error: () => alert('Não foi possível criar a conta. Confira os dados e aceite os termos.') });
   }
 }
+
