@@ -267,7 +267,8 @@ export class Mapa implements AfterViewInit, OnDestroy {
           this.erroCarregamento.set('A API retornou uma lista de ocorrências em formato inesperado.');
           return;
         }
-        this.ocorrencias.set(registros.filter((item) => item != null));
+        // Ocorrências resolvidas deixam de ser pontos ativos no mapa público.
+        this.ocorrencias.set(registros.filter((item) => item != null && !this.estaResolvida(item)));
         this.renderizar();
         const pontos = this.ocorrencias().filter((item) =>
           this.temCoordenadas(item) && this.estaEmBlumenau(item.latitude, item.longitude));
@@ -285,6 +286,10 @@ export class Mapa implements AfterViewInit, OnDestroy {
       Number.isFinite(registro.longitude) && Math.abs(registro.longitude!) <= 180;
   }
 
+  private estaResolvida(registro: Ocorrencia): boolean {
+    return String(registro.status ?? '').trim().toUpperCase() === 'RESOLVIDA';
+  }
+
   private estaEmBlumenau(latitude: number, longitude: number): boolean {
     return latitude >= -27.05 && latitude <= -26.75 &&
       longitude >= -49.25 && longitude <= -48.95;
@@ -293,7 +298,7 @@ export class Mapa implements AfterViewInit, OnDestroy {
   private renderizar(): void {
     this.registros.clearLayers();
     for (const registro of this.ocorrencias()) {
-      if (this.temCoordenadas(registro)) {
+      if (!this.estaResolvida(registro) && this.temCoordenadas(registro)) {
         const popup = document.createElement('div');
         const title = document.createElement('strong');
         title.textContent = registro.titulo || registro.categoria;
