@@ -2,10 +2,9 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { timeout } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { UserService } from '../feats/profile user/user-service/user-service';
+import { UserService, AuthProfile } from '../feats/profile user/user-service/user-service';
 
 export interface Point { latitude: number; longitude: number; }
-export interface AuthProfile { id:string; email:string; name:string; role?:string; permissions?:string[]; territoryId?:string|null; active?:boolean; }
 export interface Territory { id: string; name: string; kind: 'REGION'|'CITY'|'NEIGHBORHOOD'; externalCode: string; parentId: string|null; boundary: Point[]; }
 export interface Occurrence {
  id: number; titulo: string; descricao: string; categoria: string; localizacao: string;
